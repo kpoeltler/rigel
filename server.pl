@@ -18,12 +18,10 @@ sub main
 	$httpd = AnyEvent::HTTPD->new(
 		host => '0.0.0.0',
 		port => 9090,
-		error => sub { my($e) = @_; print "httpd error: $e\n"; }
 	);
-
-	$httpd->reg_cb (
-		'/' => \&getRoot,
-		'/test' => \&getTest
+	$httpd->reg_cb(
+		error => sub { my($e) = @_; print "httpd error: $e\n"; },
+		request => \&webRequest
 	);
 
 	my $hdl;
@@ -35,7 +33,7 @@ sub main
 	my $t;
 	$t = AnyEvent->timer (
 		after => 1,
-		interval => 1,
+		#interval => 1,
 		cb => sub {
 			print "timer fired\n";
 	  }
@@ -47,28 +45,20 @@ sub main
 }
 
 
-sub getRoot($httpd, $req)
+sub webRequest($httpd, $req)
 {
-	$req->respond ({ content => ['text/html',
-			"<html><body><h1>Hello World!</h1>"
-			. "<a href=\"/test\">another test page</a>"
-			. "</body></html>"
-	]});
+	my $buf = "<html><body>name = " . $req->parm('name') . '<br> method = ' . $req->method
+		. '<br>path = ' . $req->url->path;
+
+	$req->respond ({ content => ['text/html', $buf]});
 }
 
-sub getTest($httpd, $req)
-{
-	$req->respond ({ content => ['text/html',
-		"<html><body><h1>Test page</h1>"
-		. "<a href=\"/\">Back to the main page</a>"
-		. "</body></html>"
-	]});
-}
 
 sub readSerial($handle)
 {
 	my $d = $handle->{rbuf};
 	$handle->{rbuf} = '';
+	exit if (! $d);
 	print "SER [$d]\n";
 }
 
