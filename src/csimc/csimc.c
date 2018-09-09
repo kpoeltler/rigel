@@ -60,7 +60,7 @@ static int rflag;           /* reboot all nodes on network */
 static int el;              /* set if using edit line */
 static char targs[32];          /* string to collect tflag args */
 
-static char cfg_def[] = "archive/config/csimc.cfg"; /* default config file */
+static char cfg_def[] = "csimc"; /* default config file */
 static char *cfg_fn = cfg_def;      /* actual config file */
 static char ipme[] = "127.0.0.1";   /* local host IP */
 char *host = ipme;          /* actual server host */

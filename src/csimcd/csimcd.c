@@ -116,7 +116,7 @@ static CInfo *CFD2CIP(int fd);
 static char tty_def[30] = "/dev/ttyS0"; /* default tty onto network */
 static char *tty = tty_def;     /* tty we actually use */
 static int port = CSIMCPORT;        /* default IP port */
-static char cfg_def[] = "archive/config/csimc.cfg"; /* default config file */
+static char cfg_def[] = "csimc"; /* default config file */
 static char *cfg = cfg_def;     /* config file we actually use */
 
 static fd_set clset;        /* each client fd. host addr = fd + MAXNA */
@@ -216,7 +216,7 @@ main (int ac, char *av[])
     openTTY();
     announce();
     initCInfo();
-    initPty();
+    //initPty();
 
     /* infinite service loop */
     atexit (onExit);
@@ -250,20 +250,6 @@ usage (char *me)
     exit (1);
 }
 
-#if 0
-static void
-ptt(int on)
-{
-    int arg;
-
-    arg = on ? TIOCM_RTS : 0;
-    if (ioctl (ttyfd, TIOCMSET, &arg) < 0)
-    {
-        daemonLog ("%s: TIOCMSET: %s\n", tty, strerror(errno));
-        exit (2);
-    }
-}
-#endif
 
 /* read config file, if any */
 static void
@@ -796,7 +782,7 @@ newReboot(CInfo *cip)
     sendPkt (xpkt, 0);  /* get no ACKs from BRDCA */
     sendPkt (xpkt, 0);  /* repeat for good measure */
     breakAllConnections();  /* close all client connections */
-    initPty();      /* rescan for new SER entries, if any */
+    // initPty();      /* rescan for new SER entries, if any */
 }
 
 /* create a new BOOT connection */

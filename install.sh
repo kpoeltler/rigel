@@ -15,8 +15,9 @@
 	AnyEvent::HTTPD \
 	AnyEvent::Socket \
 	Text::Xslate \
+	HTTP::XSCookies \
 
-
+# requires Date::Parse
 
 
 

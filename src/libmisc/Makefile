@@ -1,6 +1,6 @@
 include ../common.mk
 
-CFLAGS :=  -I../libastro -I../libfits $(CFLAGS)
+CFLAGS :=  -I../libastro -I../libfits -lsqlite3  $(CFLAGS)
 
 
 OBJS =	catalogs.o 	\

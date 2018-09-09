@@ -1,7 +1,7 @@
 include ../common.mk
 
 CFLAGS := -I../libmisc $(CFLAGS)
-LIBS = -L$(inst_dir) -lmisc -lastro -lfits -lm
+LIBS = -L$(inst_dir) -lmisc -lastro -lfits -lm -lsqlite3
 
 
 rund: rund.o

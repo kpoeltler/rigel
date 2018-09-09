@@ -6,7 +6,7 @@ include ../common.mk
 
 CFLAGS := -I../libwcs -I../libfs -I../libastro -I../libfits -I../libmisc $(CFLAGS)
 LDFLAGS=  -L$(inst_dir)
-LIBS = -lmisc -lfits -lastro -lwcs -lfs -lm
+LIBS = -lmisc -lfits -lastro -lwcs -lfs -lm -lsqlite3
 
 src = $(wildcard *.c)
 obj = $(src:.c=.o)

@@ -8,10 +8,19 @@ use AnyEvent::HTTPD;
 use AnyEvent::Socket;
 use Text::Xslate qw(mark_raw);
 use FindBin qw($Bin);
-use lib $Bin;
-use Config::Tiny;
+use Cwd 'abs_path';
 use Data::Dumper;
+use HTTP::XSCookies qw/bake_cookie crush_cookie/;
+use lib $Bin;
+use Rigel::Config;
 
+my $cfg = Rigel::Config->new();
+$cfg->set('app', 'template', "$Bin/template");
+	my $tt = Text::Xslate->new(
+		path => $cfg->get('app', 'template'),
+		cache_dir => "$Bin/cache",
+		syntax => 'Metakolon'
+	);
 main();
 exit 0;
 
@@ -19,24 +28,18 @@ sub main
 {
 	my($httpd, $ra, $dec, $focus );
 
-	print "$Bin/bin/archive/config/csimc.cfg", "\n";
-	my $cfg = Config::Tiny->read( "$Bin/bin/archive/config/csimc.cfg" );
-	$cfg = $cfg->{_};
+	print "connting to ",$cfg->get('csimc', 'HOST'),':', $cfg->get('csimc', 'PORT'), "\n";
+
 	if (! -d "$Bin/cache")
 	{
 		mkdir("$Bin/cache") or die;
 	}
-	my $tt = Text::Xslate->new(
-		path => "$Bin/template",
-		cache_dir => "$Bin/cache",
-		syntax => 'Metakolon'
-	);
 
 	print "loading csimc scripts...\n";
 	# -r reboot, -l load scripts.
 	# system('csimc -rl < /dev/null');
 
-	tcp_connect "127.0.0.1", $cfg->{PORT}, sub {
+	tcp_connect "127.0.0.1", $cfg->get('csimc', 'PORT'), sub {
 		my ($fh) = @_ or die "csimcd connect failed: $!";
 
 		print "csimcd connected\n";
@@ -64,7 +67,7 @@ sub main
 
 	print "init http\n";
 	$httpd = AnyEvent::HTTPD->new(
-		host => '0.0.0.0',
+		host => '::',
 		port => 9090,
 	);
 	$httpd->reg_cb(
@@ -74,7 +77,7 @@ sub main
 
 	my $hdl;
 	$hdl = AnyEvent::SerialPort->new(
-		serial_port => '/dev/ttyUSB0',
+		serial_port => '/dev/ttyUSB1',
 		on_read => \&readSerial
 	);
 
@@ -95,10 +98,56 @@ sub main
 
 sub webRequest($httpd, $req)
 {
-	my $buf = "<html><body>name = " . $req->parm('name') . '<br> method = ' . $req->method
-		. '<br>path = ' . $req->url->path;
+	my $c = $req->headers->{cookie};
+	if ($c ) {
+		my $values = crush_cookie($c);
+		print 'cookie: ', Dumper($values), "\n";
+	} else {
+		print Dumper($req->headers);
+	}
 
-	$req->respond ({ content => ['text/html', $buf]});
+	if ($req->method eq 'POST')
+	{
+
+		my %v = $req->vars;
+		my $buf = "<html><body>name = " . $req->parm('name') . '<br> method = ' . $req->method
+			. '<br>path = ' . $req->url->path
+			. '<br>vars = ' . Dumper(\%v);
+
+		$req->respond ({ content => ['text/html', $buf]});
+		return;
+	}
+
+	#if ($req->method eq 'GET')
+	{
+		my $t = $cfg->get('app', 'template');
+		my $x = $t . $req->url->path;
+		my $file = abs_path($x);
+		# print "TMP: $x\nNew: $file\n";
+		if ($file !~ /^$t/)
+		{
+			$req->respond([404, 'not found', { 'Content-Type' => 'text/html' }, 'Sorry, file not found']);
+			return;
+		}
+
+		if ( -e $file ){
+
+			my $buf = $tt->render($req->url->path);
+			my $cookie = bake_cookie('baz', {
+					value   => 'Frodo',
+					expires => '+11h'
+			});
+			$req->respond([
+				200, 'ok',
+				{'Content-Type' => 'text/html; charset=utf-8',
+				'Content-Length' => length($buf),
+				'Set-Cookie' => $cookie
+				},
+				$buf
+			]);
+			return;
+		}
+	}
 }
 
 
