@@ -13,6 +13,8 @@
 	AnyEvent \
 	AnyEvent::SerialPort \
 	AnyEvent::HTTPD \
+	AnyEvent::Socket \
+	Text::Xslate \
 
 
 
