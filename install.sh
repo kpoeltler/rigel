@@ -16,8 +16,9 @@
 	AnyEvent::Socket \
 	Text::Xslate \
 	HTTP::XSCookies \
+	Text::CSV_XS \
 
-# requires Date::Parse
+# XSCookies requires Date::Parse
 
 
 

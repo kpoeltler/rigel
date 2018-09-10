@@ -13,6 +13,8 @@ use Data::Dumper;
 use HTTP::XSCookies qw/bake_cookie crush_cookie/;
 use lib $Bin;
 use Rigel::Config;
+use Text::CSV_XS;
+
 
 my $cfg = Rigel::Config->new();
 $cfg->set('app', 'template', "$Bin/template");
@@ -191,4 +193,16 @@ sub showTemplate($tt)
 		'Content-Length' => length($buf)],
 		[$buf]
 	];
+}
+
+sub readDome
+{
+	# T, Pnnnnn  (0-32767) means its moving
+	# V.... \n\n is an Info Packet
+	# S, Pnnnn means shutter open/close
+
+	my $csv = Text::CSV_XS->new ({ binary => 1, auto_diag => 1 });
+	$status = $csv->parse ($line);
+	@columns = $csv->fields ();
+
 }
