@@ -1,0 +1,11 @@
+	syslog
+	outside ip, ddns
+	login
+20%	csi (socket)
+20%	dome (usb)
+	camera (usb)
+20%	httpd server
+	http client
+	ssh
+	stardb
+
