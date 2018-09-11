@@ -15,6 +15,7 @@ use lib $Bin;
 use Rigel::Config;
 use Text::CSV_XS;
 
+my $domStatus;
 
 my $cfg = Rigel::Config->new();
 $cfg->set('app', 'template', "$Bin/template");
@@ -77,12 +78,30 @@ sub main
 		request => \&webRequest
 	);
 
-	my $hdl;
-	$hdl = AnyEvent::SerialPort->new(
-		serial_port => '/dev/ttyUSB1',
-		on_read => \&readSerial
-	);
+	$domStatus = 'Connecting...';
+	my $dome;
+	eval {
+		$dome = AnyEvent::SerialPort->new(
+			serial_port => '/dev/ttyUSB0',   #defaults to 9600, 8n1
+			on_read => \&readDomeSerial,
+			on_error => sub {
+				my ($hdl, $fatal, $msg) = @_;
+				print "serial error: $msg\n";
+				$hdl->destroy;
+			}
+		);
+	};
+	if ($@) {
+		print "Connect to dome failed\n";
+		print $@;
+		$domStatus = $@;
+		$dome = undef;
+	};
 
+	if ($dome) {
+		#get us a status update
+		$dome->push_write('GINF');
+	}
 	my $t;
 	$t = AnyEvent->timer (
 		after => 1,
@@ -153,12 +172,66 @@ sub webRequest($httpd, $req)
 }
 
 
-sub readSerial($handle)
+sub readDomeSerial($handle)
 {
-	my $d = $handle->{rbuf};
+	state $buf = '';
+	state $csv = Text::CSV_XS->new ({ binary => 1, auto_diag => 1 });
+
+	$buf .= $handle->{rbuf};
 	$handle->{rbuf} = '';
-	exit if (! $d);
-	print "SER [$d]\n";
+	exit if (! $buf);
+	print "Start [$buf]\n";
+
+	# T, Pnnnnn  (0-32767) means its moving
+	# V.... \n\n is an Info Packet
+	# S, Pnnnn means shutter open/close
+
+	# dump stuff until we get to the start of something we recognize
+	my $again = 1;
+	while ($again)
+	{
+		given (substr($buf, 0, 1))
+		{
+			when ('T') {
+				$domStatus = 'turning...';
+				substr($buf, 0, 1, '');
+			}
+			when ('S') {
+				$domStatus = 'shutter...';
+				substr($buf, 0, 1, '');
+			}
+			when ('P') {
+				if ($buf =~ /^P(\d{4})/)
+				{
+					$domStatus = "Azm $1";
+					substr($buf, 0, 5, '');
+				}
+				else {
+					$again = 0;
+				}
+			}
+			when ('V') {
+				my $at = index($buf, "\r\r");
+				if ($at > -1)
+				{
+					my $status = $csv->parse(substr($buf, 0, $at));
+					my @columns = $csv->fields();
+					$domStatus = Dumper(\@columns);
+					$buf = substr($buf, $at+2);
+				}
+				else {
+					$again = 0;
+				}
+			}
+			default {
+				#toss it
+				substr($buf, 0, 1, '');
+			}
+		}
+		print "Status [$domStatus]\n";
+		$again = 0 if (length($buf) == 0);
+	}
+	print "End [$buf]\n";
 }
 
 
@@ -195,14 +268,3 @@ sub showTemplate($tt)
 	];
 }
 
-sub readDome
-{
-	# T, Pnnnnn  (0-32767) means its moving
-	# V.... \n\n is an Info Packet
-	# S, Pnnnn means shutter open/close
-
-	my $csv = Text::CSV_XS->new ({ binary => 1, auto_diag => 1 });
-	$status = $csv->parse ($line);
-	@columns = $csv->fields ();
-
-}
