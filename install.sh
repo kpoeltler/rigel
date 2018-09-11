@@ -8,7 +8,6 @@
 	JSON::XS \
 	DBI \
 	DBD::SQLite \
-	RPi::WiringPi \
 	EV \
 	AnyEvent \
 	AnyEvent::SerialPort \

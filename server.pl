@@ -19,11 +19,13 @@ my $domStatus;
 
 my $cfg = Rigel::Config->new();
 $cfg->set('app', 'template', "$Bin/template");
-	my $tt = Text::Xslate->new(
-		path => $cfg->get('app', 'template'),
-		cache_dir => "$Bin/cache",
-		syntax => 'Metakolon'
-	);
+
+my $tt = Text::Xslate->new(
+	path => $cfg->get('app', 'template'),
+	cache_dir => "$Bin/cache",
+	syntax => 'Metakolon'
+);
+
 main();
 exit 0;
 
@@ -42,7 +44,7 @@ sub main
 	# -r reboot, -l load scripts.
 	# system('csimc -rl < /dev/null');
 
-	tcp_connect "127.0.0.1", $cfg->get('csimc', 'PORT'), sub {
+	tcp_connect $cfg->get('csimc', 'HOST'), $cfg->get('csimc', 'PORT'), sub {
 		my ($fh) = @_ or die "csimcd connect failed: $!";
 
 		print "csimcd connected\n";
@@ -119,12 +121,11 @@ sub main
 
 sub webRequest($httpd, $req)
 {
+	# print Dumper($req->headers);
 	my $c = $req->headers->{cookie};
 	if ($c ) {
 		my $values = crush_cookie($c);
 		print 'cookie: ', Dumper($values), "\n";
-	} else {
-		print Dumper($req->headers);
 	}
 
 	if ($req->method eq 'POST')
@@ -208,6 +209,11 @@ sub readDomeSerial($handle)
 				}
 				else {
 					$again = 0;
+					# if we receive Pjnk1234 we'll collect till out of mem
+					if (length($buf) > 15) {
+						#bah..  buf is weird, kill it
+						$buf = '';
+					}
 				}
 			}
 			when ('V') {
@@ -221,6 +227,10 @@ sub readDomeSerial($handle)
 				}
 				else {
 					$again = 0;
+					if (length($buf) > 200) {
+						#something very wrong this this status, kill it
+						$buf = '';
+					}
 				}
 			}
 			default {
