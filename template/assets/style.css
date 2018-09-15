@@ -10,15 +10,15 @@ body, html, .container {
 	-webkit-text-size-adjust: auto;
 	-moz-text-size-adjust: auto;
   }
-/* .container.mainContent {
+.container.mainContent {
 	min-width: 1160px;
 	border: 1px solid rgb(22, 22, 29);
-	/* background: radial-gradient(rgb(17, 190, 1) 15%, rgb(2, 163, 23) 30%, rgb(0, 73, 0) 80%); */
-	/* background-size: cover;
+   background: radial-gradient(rgb(17, 190, 1) 15%, rgb(2, 163, 23) 30%, rgb(0, 73, 0) 80%);
+	background-size: cover;
 	background-image: url("../assets/images/blue.jpg");
 	border-radius: 10px;
-	overflow: hidden; */
-/* } */
+	overflow: hidden;
+ };
 
 .jumbotron {
 	background-image: url("../assets/images/blue.jpg");
@@ -30,3 +30,116 @@ body, html, .container {
 	-webkit-background-size: cover;
 	background-size: cover;
 }
+
+
+/* DPad */
+.dpadContainer {
+	position: relative;
+	margin-left: 180px;
+	background-color: #3b3b3b;
+	text-align: center;
+	font-family: sans-serif;
+	display: inline-block;
+	width: 100%;
+	height: 100%;
+	max-width: 640px;
+	max-height: 360px;
+ }
+#dpad-2 {
+	position: absolute;
+	width: 20%;
+	height: 100%;
+	top: 0px;
+	left: 55%;
+ }
+ .dpad-relative-container, .dpad-absolute-container {
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
+ }
+
+ /* .dpad-relative, .dpad-absolute {
+	background-size: 90% auto;
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
+ } */
+
+ .dpad-relative-container {
+	background-image: url('../assets/images/dpad-background.png');
+ }
+
+ .dpad-relative {
+	background-image: url('../assets/images/dpad-relative.png');
+ }
+
+ .dpad-absolute-container {
+	background-image: url('../assets/images/dpad-absolute.png');
+ }
+
+ .dpad-arrow {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0px;
+	left: 0px;
+	background-size: 90% auto;
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
+	display: none;
+ }
+
+ .dpad-arrow-active {
+	display: block;
+ }
+
+ /* Relative arrows */
+ .dpad-relative .dpad-arrow-down {
+	background-image: url('../assets/images/dpad-arrow-down.png');
+ }
+
+ .dpad-relative .dpad-arrow-left {
+	background-image: url('../assets/images/dpad-arrow-left.png');
+ }
+
+ .dpad-relative .dpad-arrow-right {
+	background-image: url('../assets/images/dpad-arrow-right.png');
+ }
+
+ .dpad-relative .dpad-arrow-up {
+	background-image: url('../assets/images/dpad-arrow-up.png');
+ }
+
+ /* Absolute arrows */
+ .dpad-absolute .dpad-arrow-active {
+	background-size: 100% auto;
+ }
+
+ .dpad-absolute .dpad-arrow-up {
+	background-image: url('../assets/images/dpad-absolute-up.png');
+ }
+
+ .dpad-absolute .dpad-arrow-down {
+	background-image: url('../assets/images/dpad-absolute-down.png');
+ }
+
+ .dpad-absolute .dpad-arrow-left {
+	background-image: url('../assets/images/dpad-absolute-left.png');
+ }
+
+ .dpad-absolute .dpad-arrow-right {
+	background-image: url('..assets/images/dpad-absolute-right.png');
+ }
+
+ .dpad-instructions {
+	color: white;
+	position: absolute;
+	left: 0px;
+	top: 50%;
+	width: 100%;
+	margin-top: -0.5em;
+	text-align: center;
+ }
+
+ .dpad-active .dpad-instructions {
+	color: #ccf400;
+ }
